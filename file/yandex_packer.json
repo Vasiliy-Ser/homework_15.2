@@ -1,0 +1,57 @@
+{
+  "variables": {
+    "token": "",
+    "folder_id": "",
+    "zone": "",
+    "subnet_id": ""
+  },
+  "builders": [
+    {
+      "type":      "yandex",
+      "token":     "{{user `token`}}",
+      "folder_id": "{{user `folder_id`}}",
+      "zone":      "{{user `zone`}}",
+
+      "image_name":        "ubuntu-2004-14-03-2025",
+      "image_family":      "ubuntu-2004",
+      "image_description": "my custom ubuntu with nginx",
+
+      "source_image_family": "ubuntu-2004-lts",
+      "subnet_id":           "{{user `subnet_id`}}",
+      "use_ipv4_nat":        true,
+      "disk_type":           "network-ssd",
+      "ssh_username":        "ubuntu"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "echo 'updating APT'",
+        "export DEBIAN_FRONTEND=noninteractive",
+        "sudo apt-get update -y",
+        "sudo apt-get install -y nginx",
+        "sudo systemctl enable nginx.service",
+        "curl localhost",
+
+        "echo 'Installing required dependencies'",
+        "sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common",
+
+        "echo 'Adding Docker GPG key and repository'",
+        "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -",
+        "sudo add-apt-repository \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\"",
+
+        "echo 'Installing Docker'",
+        "sudo apt-get update -y",
+        "sudo apt-get install -y docker-ce",
+
+        "echo 'Starting and enabling Docker service'",
+        "sudo systemctl start docker",
+        "sudo systemctl enable docker",
+
+        "echo 'Installing htop and tmux'",
+        "sudo apt-get install -y htop tmux"
+      ]
+    }
+  ]
+}
